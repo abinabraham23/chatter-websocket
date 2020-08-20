@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>my.test.app</groupId>
-	<artifactId>chatter-ws</artifactId>
+	<artifactId>chatter</artifactId>
 	<version>1.0</version>
 
 	<packaging>war</packaging>
