@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>my.test.app</groupId>
+	<artifactId>chatter-ws</artifactId>
+	<version>1.0</version>
+
+	<packaging>war</packaging>
+
+	<name>Chatter :: websocket application</name>
+	<description>A simple chat application using WebSocket</description>
+
+	<properties>
+		<version.websocket.api>1.1.4.Final</version.websocket.api>
+		<version.jboss.logging>3.1.4.GA-redhat-2</version.jboss.logging>
+		<version.maven.plugin>3.2.1</version.maven.plugin>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.spec.javax.websocket</groupId>
+			<artifactId>jboss-websocket-api_1.1_spec</artifactId>
+			<version>${version.websocket.api}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>${version.jboss.logging}</version>
+            <scope>provided</scope>
+        </dependency>
+	</dependencies>
+
+	<build>
+		<!-- Set the name of the WAR, used as the context root when the app is 
+			deployed -->
+		<finalName>${project.artifactId}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>${version.maven.plugin}</version>
+				<configuration>
+					<warName>ROOT</warName>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

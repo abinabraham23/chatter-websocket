@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html>
+<head>
+<title>Chatter</title>
+<link rel="stylesheet" type="text/css" href="resources/css/style.css" />
+<script type="text/javascript">
+            var websocket = null;
+
+            function connect() {
+
+            	const userStyles = ["user1", "user2", "user3", "user4"];
+            	const style = Math.floor(Math.random() * userStyles.length);
+                
+                var name = document.getElementById('name').value;
+                var wsProtocol = window.location.protocol == "https:" ? "wss" : "ws";
+                var wsURI = wsProtocol + '://' + window.location.host + window.location.pathname + 'websocket/chatroom?'+name;
+                websocket = new WebSocket(wsURI);
+
+                websocket.onopen = function(event) {
+                    if (name.length == 0){
+	                    websocket.close();
+	                    websocket = null;
+                    }
+                    else{
+                    	displayStatus('Joined');
+	                    document.getElementById('enter').disabled = false;
+	                    notificationMessage('Welcome ' + name + ' to the chatroom' , 'welcome');
+                        }
+                };
+
+                websocket.onmessage = function(event) {
+                    	displayChatMessage(event.data, userStyles[style]);
+                };
+
+                 websocket.onerror = function(event) {
+                  notificationMessage('Error! ' + event.data, 'error');
+                };
+                
+                websocket.onclose = function() {
+                	if (name.length == 0){
+                		displayStatus('Closed');
+                    	notificationMessage('Please enter a name to join the chatroom' , 'error');
+	                    document.getElementById('enter').disabled = true;
+                    	}
+                	else{
+                		displayStatus('Logged-out');
+	                    notificationMessage('The session was closed or timed out due to inactivity. Please join the chatroom again to continue...');
+	                    document.getElementById('enter').disabled = true;
+                    }
+                };
+            }
+
+            function disconnect() {
+                if (websocket !== null) {
+                    websocket.close();
+                    websocket = null;
+                }
+                notificationMessage('Session closed.', 'error');
+            }
+
+            function sendMessage(e) {
+                if (websocket !== null) {
+                    var content = document.getElementById('message').value;
+                    var key=e.keyCode || e.which;
+                    if (key == 13)
+                        {
+                    		websocket.send(content);
+                    		document.getElementById('message').value = null;
+                        }
+                } else {
+                    notificationMessage('Not joined yet, please join the chatroom', 'error');
+                }
+            }
+
+            function notificationMessage(data, style) {
+                var message = document.getElementById('notification');
+                message.setAttribute("class", style);
+                message.value = data;
+            }
+            
+            function displayChatMessage(data, style) {
+
+                var chatmessage = document.getElementById('chatmessage'); //
+                chatmessage.setAttribute("class", style); 	//
+                var p = document.createElement('div');
+                p.style.wordWrap = 'break-word';
+                p.innerHTML = data;
+                chatmessage.appendChild(p);
+                while (chatmessage.childNodes.length > 25) {
+                	chatmessage.removeChild(chatmessage.firstChild);
+                }
+                chatmessage.scrollTop = chatmessage.scrollHeight;
+            }
+			
+            function displayStatus(status) {
+                var currentStatus = document.getElementById('currentstatus');
+                currentStatus.value = status;
+            }
+
+        </script>
+</head>
+<body>
+
+	<div>
+		<div id="connect-container">
+		<h2>Chatter</h2>
+			<div>
+				<fieldset>
+					<legend>Type your name below and join the chatroom</legend>
+					<input id="name" type="text" onfocus="this.value=''" size="40"
+						style="width: 40%" /> <input type="button" id="connect"
+						onclick="connect();" value="Join Chatroom" /> <input
+						type="button" id="disconnect" onclick="disconnect();"
+						value="Sign-out" /> Current Status:
+					<output id="currentstatus" class="message">Closed</output>
+					<br>
+					<br>
+					<output id="notification" />
+				</fieldset>
+			</div>
+			<div>
+				<fieldset>
+					<legend>Message box</legend>
+					<input id="message" type="text" placeholder="type your message and press enter" onfocus="this.value=''" size="50"
+						style="width: 40%"  onkeypress="sendMessage(event)"/>
+				</fieldset>
+			</div>
+			<div>
+				<fieldset>
+					<legend>Chatroom</legend>
+					<output id="chatmessage" />
+				</fieldset>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+/* Core styles for the page */
+output.message {
+    color: blue;
+    font-style: italic;
+}
+
+output.welcome {
+    color: purple;
+    font-style: normal;
+}
+
+output.error {
+    color: red;
+    font-weight: bold;
+    font-style: normal;
+}
+
+output.user1 {
+    color: maroon;
+    font-style: normal;
+}
+
+output.user2 {
+    color: olive;
+    font-style: normal;
+}
+
+output.user3 {
+    color: navy;
+    font-style: normal;
+}
+
+output.user4 {
+    color: green;
+    font-style: normal;
+}
+
+div {
+    padding: 10px;
+}
+
+h2 {
+	font-family: georgia;
+	text-align: center;
+	color: maroon;
+	font-size: 150%;
+}
+
+fieldset {
+    border-radius:10px;
+    padding: 10px;
+}
+
