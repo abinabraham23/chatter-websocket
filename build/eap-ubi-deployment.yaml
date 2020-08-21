@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eap72
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eap72
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: eap72
+    spec:
+      containers:
+      - name: eap72
+        image: testakscontainerregistry.azurecr.io/eap-ubi:1.1
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eap72
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8090
+  selector:
+    app: eap72

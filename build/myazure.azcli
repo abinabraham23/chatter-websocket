@@ -1,0 +1,56 @@
+### ACR: testakscontainerregistry  
+# ResGrp: TestAzure
+
+### AKS: test-aks
+# ResGrp: TestAzure
+
+### Build Image and Run Container in Docker Engine
+
+# Look for UBI images list in Red Hat public registry
+docker search registry.access.redhat.com/ubi
+
+# Start UBI test container running an interactive shell
+docker run -it --name test registry.access.redhat.com/ubi8/ubi:8.1 bash
+
+# Build an image based on Dockerfile
+docker build -t eap-test .
+
+# start a container from image built
+docker run --name eap-test -p 8090:8080 -d eap-test
+
+# SSH to running container as "/bin/bash" with container-name, here "eap-test" 
+docker exec -it eap-test /bin/bash
+
+
+### Play with Azure Kubernetes Services (AKS) and Container Registry (ACR)
+
+# Login to  Azure Container Registry
+az acr login -n testakscontainerregistry
+
+# Import image from external registry (this case RHEL)
+az acr import --name testakscontainerregistry --source registry.access.redhat.com/ubi8/ubi:8.1 --image rhel-ubi
+
+# Docker image build using az cli 
+az acr build --image eap-ubi:1.1 --registry testakscontainerregistry --file Dockerfile .
+
+# Run the container
+az acr run -r testakscontainerregistry --cmd '$Registry/eap-ubi:1.1' /dev/null
+
+# apply the template and create objects (in this case, it's creating deployment object)
+kubectl apply -f eap-ubi-deployment.yaml
+
+# List all running pods
+kubectl get pods
+
+# Monitor the progress of deployment and endpoint details
+kubectl get service eap72 --watch
+
+# Display all deployment objects created
+kubectl get deployment -o name
+
+# Execute a command in a container
+kubectl exec -t -i <pod-name> bash
+## Note: use the -t -i options to get a tty and attach STDIN, for pseudo terminal or interactive shell.
+
+# Delete the resouce object (in this case it's deployment objects)
+kubectl delete deployment.apps/eap72
