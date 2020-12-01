@@ -18,7 +18,9 @@ RUN yum install -y unzip \
 		curl \
 		java-1.8.0-openjdk \
 		git \
-		&& rm -rf /tmp/yum*
+		yum clean all \
+		&& rm -rf /tmp/yum* \
+		&& rm -rf /var/cache/yum/*
 
 # Set Timezone
 ENV TZ "Europe/Berlin"
