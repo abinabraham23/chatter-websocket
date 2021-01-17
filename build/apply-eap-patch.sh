@@ -17,8 +17,10 @@ function applyPatch ()
 
 function cleanup ()
 {
-    rm -rf /tmp/patch.sh /tmp/{PATCH_ARTIFACT}
+    rm -rf /tmp/patch.sh /tmp/${PATCH_ARTIFACT}
     logMessage "Temp files deleted..";   
+    rm -rf $JBOSS_HOME/.installation
+    logMessage "temporary installation directory deleted..";   
 }
 
 # Steps

@@ -16,26 +16,26 @@ RUN yum install -y unzip \
 		&& rm -rf /var/cache/yum/*
 
 # Create a user and group used to launch processes
-# The user ID 1000 is the default for the first "regular" user on Fedora/RHEL,
+# The user ID 1000 is the default for the first "regular" user on RHEL,
 # so there is a high chance that this ID will be equal to the current user
 # making it easier to use volumes (no permission issues)
-RUN groupadd -r jboss -g 1000 && \
-    useradd -u 1000 -r -g jboss -m -d /opt/jboss -s /sbin/nologin -c "JBoss user" jboss && \
-    chmod 755 /opt/jboss
-
-# Set the working directory to jboss' user home directory
-WORKDIR /opt/jboss
+RUN groupadd -r jboss -g 1000 \
+	&& useradd -u 1000 -r -g jboss -m -d /opt/jboss -s /sbin/nologin -c "JBoss user" jboss
 
 USER jboss
+#USER root
 
 # Set JBoss ENVs
 ENV JBOSS_HOME=/opt/jboss/jboss-eap-7.2
-#	JAVA_HOME=/usr/lib/jvm/java-1.8.0
 
 # Set JBoss ARGs
 ARG INSTALL_ARTIFACT=jboss-eap-7.2.0.zip 
 ARG PATCH_ARTIFACT=jboss-eap-7.2.9-patch.zip
 ARG APP_ARTIFACT=ROOT.war
+
+ARG JBOSS_BASE=/opt/jboss
+ARG JBOSS_CONFIG=$JBOSS_HOME/standalone/configuration
+ARG JBOSS_MODULE=$JBOSS_HOME/modules
 
 # Set the root for install
 USER root
@@ -52,25 +52,45 @@ RUN unzip /tmp/${INSTALL_ARTIFACT} -d /opt/jboss \
 	&& chown -R jboss:0 ${JBOSS_HOME} \
 	&& chmod -R g+rw ${JBOSS_HOME}
 
-
 COPY artifacts/${PATCH_ARTIFACT} /tmp/
 COPY apply-eap-patch.sh /tmp/patch.sh
 RUN chmod +x /tmp/patch.sh \
     && /tmp/patch.sh
 
-# Ensure signals are forwarded to the JVM process correctly for graceful shutdown
-ENV LAUNCH_JBOSS_IN_BACKGROUND true
+ARG MODULE_NAME="mysql"
+ARG JDBC_JAR_NAME="mysql-connector-java-8.0.22"
+
+# COPY scripts/ /opt/jboss/scripts/
+COPY config/* ${JBOSS_BASE}/config/
+COPY modules/* ${JBOSS_BASE}/modules/
+
+# COPY modules/${JDBC_JAR_NAME}.jar /tmp/
+# COPY add-module.sh /tmp/module.sh
+RUN chmod -R +rx ${JBOSS_BASE}/config/ \
+	&& chmod -R +x ${JBOSS_BASE}/modules/ \
+	&& ${JBOSS_BASE}/config/apply-eap-config.sh
+
+# # Copy the chatter app war file as ROOT.war to server deployment directory
+COPY artifacts/${APP_ARTIFACT} ${JBOSS_HOME}/standalone/deployments/${APP_ARTIFACT}
+
+RUN chmod -R 755 ${JBOSS_HOME} \
+	&& chown -R jboss:1000 ${JBOSS_HOME} 
 
 # Set the current user for JBoss process
 USER jboss
+
+# Ensure signals are forwarded to the JVM process correctly for graceful shutdown
+ENV LAUNCH_JBOSS_IN_BACKGROUND true
+
+# ENV JAVA_OPTS="Xmx1024M"
 
 # # Open Ports
 EXPOSE 8080 9990
 
 # Make Java 8 obey container resource limits, improve performance
-ENV JAVA_OPTS "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -Djava.awt.headless=true"
+#ENV JAVA_OPTS="-Xms1303m -Xmx1303m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -Djava.awt.headless=true"
 
 CMD ["/opt/jboss/jboss-eap-7.2/bin/standalone.sh", "-c", "standalone-full.xml", "-b", "0.0.0.0" ]
 
-# # Copy the chatter app war file as ROOT.war to server deployment directory
-COPY artifacts/${APP_ARTIFACT} ${JBOSS_HOME}/standalone/deployments/${APP_ARTIFACT}
+# Set the working directory to jboss user home directory
+WORKDIR ${JBOSS_HOME}
