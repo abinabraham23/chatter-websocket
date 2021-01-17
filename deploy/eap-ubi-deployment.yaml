@@ -1,3 +1,12 @@
+# Below config-map is used to set the JAVA_OPTS as environment variable.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eap72-java-opts
+data:
+  ## This will override the default settings with below options specified. 
+  java_opts: "-Xms250m -Xmx250m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Djava.net.preferIPv4Stack=true"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,13 +29,19 @@ spec:
       - name: eap72
         image: eap72:latest
         imagePullPolicy: IfNotPresent
+        env:
+          - name: JAVA_OPTS
+            valueFrom:
+              configMapKeyRef:
+                name: eap72-java-opts
+                key: java_opts
         ports:
         - containerPort: 8080
         resources:
           requests:
-            cpu: 500m
-          limits:
             cpu: 750m
+          limits:
+            cpu: 1000m
 ---
 apiVersion: v1
 kind: Service
