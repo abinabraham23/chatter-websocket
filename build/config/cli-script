@@ -1,0 +1,9 @@
+# Add system property for testing 
+/system-property=test.parameter1:add(value="val1")
+/system-property=test.parameter2:add(value="val2")
+
+# Clear patch history
+/core-service=patching:ageout-history
+
+shutdown
+\q
