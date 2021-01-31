@@ -60,7 +60,12 @@ function addModule ()
 
 function applyConfig ()
 {   
-    if [ -f "${JBOSS_BASE}/config/standalone-custom.xml" ]; then
+    if [ -f "${JBOSS_BASE}/config/cli-script" ]; then
+        logMessage "Applying config via CLI";
+        $JBOSS_HOME/bin/jboss-cli.sh -c --properties=$JBOSS_CONFIG/standalone-full.xml --file=${JBOSS_BASE}/config/cli-script
+        logMessage "Config via CLI applied successfully";
+    
+    elif [ -f "${JBOSS_BASE}/config/standalone-custom.xml" ]; then
         logMessage "Adding custom standalone-full xml";
         mv -f ${JBOSS_CONFIG}/standalone-full.xml ${JBOSS_CONFIG}/standalone-full.xml.bk
         mv -f ${JBOSS_BASE}/config/standalone-custom.xml ${JBOSS_CONFIG}/standalone-full.xml
@@ -68,12 +73,7 @@ function applyConfig ()
         
         # Shutdown JBoss EAP in admin-mode
         stopJboss
-
-    elif [ -f "${JBOSS_BASE}/config/cli-script" ]; then
-        logMessage "Applying config via CLI";
-        $JBOSS_HOME/bin/jboss-cli.sh -c --properties=$JBOSS_CONFIG/standalone-full.xml --file=${JBOSS_BASE}/config/cli-script
-        logMessage "Config via CLI applied successfully";
-
+        
     else
         logMessage "No configurations added. Using the base EAP 7.2 configuration"
     fi
