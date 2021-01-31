@@ -46,13 +46,13 @@ RUN echo "Europe/Berlin" | tee /etc/timezone
 
 # Fetch the JBoss installation archive from context directory
 # Extract the installation archive to JBOSS_HOME
-COPY artifacts/${INSTALL_ARTIFACT} /tmp/
+COPY artifact/${INSTALL_ARTIFACT} /tmp/
 RUN unzip /tmp/${INSTALL_ARTIFACT} -d /opt/jboss \
     && rm -rf /tmp/${INSTALL_ARTIFACT} \
 	&& chown -R jboss:0 ${JBOSS_HOME} \
 	&& chmod -R g+rw ${JBOSS_HOME}
 
-COPY artifacts/${PATCH_ARTIFACT} /tmp/
+COPY artifact/${PATCH_ARTIFACT} /tmp/
 COPY apply-eap-patch.sh /tmp/patch.sh
 RUN chmod +x /tmp/patch.sh \
     && /tmp/patch.sh
@@ -71,7 +71,7 @@ RUN chmod -R +rx ${JBOSS_BASE}/config/ \
 	&& ${JBOSS_BASE}/config/apply-eap-config.sh
 
 # # Copy the chatter app war file as ROOT.war to server deployment directory
-COPY artifacts/${APP_ARTIFACT} ${JBOSS_HOME}/standalone/deployments/${APP_ARTIFACT}
+COPY artifact/${APP_ARTIFACT} ${JBOSS_HOME}/standalone/deployments/${APP_ARTIFACT}
 
 RUN chmod -R 755 ${JBOSS_HOME} \
 	&& chown -R jboss:1000 ${JBOSS_HOME} 
